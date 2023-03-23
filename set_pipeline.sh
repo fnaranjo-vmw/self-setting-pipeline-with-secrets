@@ -14,7 +14,7 @@ fly --target "your-target"                       \
   --config pipeline.yml                          \
   -l <(cat <<EOF
   secrets:
-    git_private_key: "$GIT_PRIVATE_KEY"
+    git_private_key: "$(echo "${GIT_PRIVATE_KEY}" | sed 's/$/\\n/g' | tr -d '\n')"
 EOF
 )
 

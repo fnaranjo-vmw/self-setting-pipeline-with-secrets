@@ -41,7 +41,7 @@ jobs:
       params:
         SECRETS: ((secrets))
       outputs:
-        name: out
+      - name: out
       run:
         path: /bin/ash
         args:
