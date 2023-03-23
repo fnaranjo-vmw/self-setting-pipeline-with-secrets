@@ -1,12 +1,15 @@
 # Quickstart
 
 1. Modify `set_pipeline.sh` and set your own Concourse url and team-name.
+
    (To spawn a local Concourse instance using docker-compose follow the instructions from:
    https://github.com/concourse/concourse-docker/blob/master/README.md)
+
 2. Export the environment variables required by the script:
   ```
   export GIT_PRIVATE_KEY="your git OPENSSH private key here"
   ```
+
 3. Run set_pipeline.sh:
   ```
   ./set_pipeline.yml
