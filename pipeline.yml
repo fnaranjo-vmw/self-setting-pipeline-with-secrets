@@ -1,0 +1,58 @@
+---
+var_sources:
+- name: secrets
+  type: dummy
+  config:
+    vars: ((secrets))
+
+resources:
+- name: repo
+  type: git
+  source:
+    uri: git@github.com:fnaranjo-vmw/self-setting-pipeline-with-secrets
+    private_key: ((secrets:git_private_key))
+
+jobs:
+- name: auto-update-pipeline
+  # IMPORTANT!
+  # This pipeline can expose the secrets in the logs when any
+  # change is introduced to the `auto-update-pipeline` job.
+  #
+  # This risk can be reduced almostly completely by enabling
+  # Concourse's secret-redaction feature:
+  # https://concourse-ci.org/creds-redacting.html#creds-redacting
+  #
+  # Even with redaction enabled, I would keep this job private
+  # Also, keep in mind that secret-redaction alone DOES NOT prevent
+  # your secrets from being snooped. Anyone with permission to run
+  # `fly set-pipeline` can still see your secrets in plain text.
+  # Keep this into consideration when adding users to your instance.
+  public: false
+  plan:
+  - get: repo
+    trigger: true
+
+  - task: serialize-secrets-for-set-pipeline
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: { repository: busybox }
+      params:
+        SECRETS: ((secrets))
+      outputs:
+        name: out
+      run:
+        path: /bin/ash
+        args:
+        - "-e"
+        - "-c"
+        - |
+          cat <<EOF> "out/secrets.json"
+          {"secrets":$SECRETS}
+          EOF
+
+  - set_pipeline: self
+    file: repo/pipeline.yml
+    var_files:
+    - out/secrets.json
